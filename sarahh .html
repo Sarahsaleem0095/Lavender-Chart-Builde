@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dual Lavender Chart Builder</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ede7f6;
+      color: #4a3f55;
+      padding: 30px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #6a5495;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .chart-block {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(120, 110, 150, 0.3);
+      padding: 25px 30px;
+      margin-bottom: 40px;
+      max-width: 700px;
+      width: 100%;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1.5px solid #b7a9d9;
+      background: #f4efff;
+      font-size: 1rem;
+    }
+    textarea {
+      min-height: 60px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 12px;
+      font-weight: bold;
+      font-size: 1rem;
+      background: #7c6bb0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #5e4a91;
+    }
+    canvas {
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<h1>Lavender Chart Builder (2 Charts)</h1>
+
+<!-- Chart Section 1 -->
+<div class="chart-block">
+  <h2>Chart 1</h2>
+  <label for="chartType1">Chart Type</label>
+  <select id="chartType1">
+    <option value="bar">Bar</option>
+    <option value="line">Line</option>
+    <option value="pie">Pie</option>
+    <option value="doughnut">Doughnut</option>
+  </select>
+
+  <label for="labels1">Labels (comma separated)</label>
+  <input type="text" id="labels1" placeholder="e.g. Jan, Feb, Mar" />
+
+  <label for="datasetLabel1_1">Dataset 1 Label</label>
+  <input type="text" id="datasetLabel1_1" placeholder="e.g. Sales" />
+  <textarea id="data1_1" placeholder="e.g. 10, 20, 30"></textarea>
+
+  <label for="datasetLabel2_1">Dataset 2 Label</label>
+  <input type="text" id="datasetLabel2_1" placeholder="e.g. Revenue" />
+  <textarea id="data2_1" placeholder="e.g. 15, 25, 35"></textarea>
+
+  <button onclick="generateChart(1)">Generate Chart 1</button>
+  <canvas id="canvas1" height="200"></canvas>
+</div>
+
+<!-- Chart Section 2 -->
+<div class="chart-block">
+  <h2>Chart 2</h2>
+  <label for="chartType2">Chart Type</label>
+  <select id="chartType2">
+    <option value="bar">Bar</option>
+    <option value="line">Line</option>
+    <option value="pie">Pie</option>
+    <option value="doughnut">Doughnut</option>
+  </select>
+
+  <label for="labels2">Labels (comma separated)</label>
+  <input type="text" id="labels2" placeholder="e.g. Q1, Q2, Q3" />
+
+  <label for="datasetLabel1_2">Dataset 1 Label</label>
+  <input type="text" id="datasetLabel1_2" placeholder="e.g. Units" />
+  <textarea id="data1_2" placeholder="e.g. 5, 15, 25"></textarea>
+
+  <label for="datasetLabel2_2">Dataset 2 Label</label>
+  <input type="text" id="datasetLabel2_2" placeholder="e.g. Growth" />
+  <textarea id="data2_2" placeholder="e.g. 8, 18, 28"></textarea>
+
+  <button onclick="generateChart(2)">Generate Chart 2</button>
+  <canvas id="canvas2" height="200"></canvas>
+</div>
+
+<script>
+  const chartInstances = {};
+
+  function getRandomColor() {
+    const colors = ['#b39ddb', '#9575cd', '#7e57c2', '#673ab7', '#5e35b1', '#512da8'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function generateChart(id) {
+    const type = document.getElementById(`chartType${id}`).value;
+    const labels = document.getElementById(`labels${id}`).value.split(',').map(l => l.trim());
+
+    const label1 = document.getElementById(`datasetLabel1_${id}`).value;
+    const data1 = document.getElementById(`data1_${id}`).value.split(',').map(v => parseFloat(v.trim()));
+
+    const label2 = document.getElementById(`datasetLabel2_${id}`).value;
+    const data2 = document.getElementById(`data2_${id}`).value.split(',').map(v => parseFloat(v.trim()));
+
+    const datasets = [];
+
+    if (label1 && data1.length === labels.length) {
+      datasets.push({
+        label: label1,
+        data: data1,
+        backgroundColor: labels.map(() => getRandomColor()),
+        borderColor: '#4a3f55',
+        borderWidth: 1
+      });
+    }
+
+    if ((type === 'bar' || type === 'line') && label2 && data2.length === labels.length) {
+      datasets.push({
+        label: label2,
+        data: data2,
+        backgroundColor: labels.map(() => getRandomColor()),
+        borderColor: '#4a3f55',
+        borderWidth: 1
+      });
+    }
+
+    if ((type === 'pie' || type === 'doughnut') && datasets.length > 1) {
+      alert('Pie and Doughnut charts support only one dataset.');
+      return;
+    }
+
+    const canvas = document.getElementById(`canvas${id}`);
+    const ctx = canvas.getContext('2d');
+
+    if (chartInstances[id]) chartInstances[id].destroy();
+
+    chartInstances[id] = new Chart(ctx, {
+      type,
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: `Chart ${id}` }
+        },
+        scales: (type === 'bar' || type === 'line') ? {
+          y: { beginAtZero: true }
+        } : {}
+      }
+    });
+  }
+</script>
+</body>
+</html>
